@@ -33,5 +33,5 @@ Follow these steps to get the project running on your local machine.
 
 ### 1. Clone the repository
 ```bash
-git clone [https://github.com/mahmoudnady/ecommerce-test.git](https://github.com/mahmoudnady/ecommerce-test.git)
+git clone [https://github.com/AboNady/Laravel-Task.git](https://github.com/AboNady/Laravel-Task.git)
 cd ecommerce-test
