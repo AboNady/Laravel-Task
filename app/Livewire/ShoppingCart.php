@@ -7,8 +7,52 @@ use Livewire\Attributes\On;
 use App\Models\CartItem;
 use Illuminate\Support\Facades\Auth;
 
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Jobs\SendLowStockAlert; 
+use Illuminate\Support\Facades\DB;
+
 class ShoppingCart extends Component
 {
+    public function checkout()
+    {
+        if ($this->cartItems->isEmpty()) {
+            return;
+        }
+
+        DB::transaction(function () {
+            
+            $order = Order::create([
+                'user_id' => Auth::id(),
+                'total_price' => $this->totalPrice,
+            ]);
+
+            foreach ($this->cartItems as $item) {
+                // Create Order Item
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'product_id' => $item->product_id,
+                    'quantity' => $item->quantity,
+                    'price' => $item->product->price,
+                ]);
+
+                $item->product->decrement('stock_quantity', $item->quantity);
+
+                // CHECK REQUIREMENT: Low Stock Notification
+                if ($item->product->fresh()->stock_quantity < 5) {
+                    SendLowStockAlert::dispatch($item->product);
+                }
+            }
+
+            CartItem::where('user_id', Auth::id())->delete();
+        });
+
+        session()->flash('message', 'Order placed successfully!');
+        $this->dispatch('cart-updated');
+        
+        return redirect()->route('dashboard');
+    }
+
     public function getCartItemsProperty()
     {
         return CartItem::where('user_id', Auth::id())
