@@ -14,20 +14,18 @@ class SendLowStockAlert implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $product;
+    public Product $product;
+    public string $email;
 
-    public function __construct(Product $product)
+    public function __construct(Product $product, string $email)
     {
         $this->product = $product;
+        $this->email = $email;
     }
 
     public function handle(): void
     {
-        if (auth()->check())
-            {
-                Mail::to(auth()->user()->email)
-                ->queue(new LowStockEmail($this->product));
-            }
-
+        Mail::to($this->email)
+            ->send(new LowStockEmail($this->product));
     }
 }

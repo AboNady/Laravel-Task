@@ -40,7 +40,11 @@ class ShoppingCart extends Component
 
                 // CHECK REQUIREMENT: Low Stock Notification
                 if ($item->product->fresh()->stock_quantity < 5) {
-                    SendLowStockAlert::dispatch($item->product);
+                    SendLowStockAlert::dispatch(
+                        $item->product,
+                                    auth()->user()->email
+                    );
+
                 }
             }
 
